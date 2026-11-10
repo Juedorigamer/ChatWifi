@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Configuracion local: contiene shared_secret y tokens de Supabase. NUNCA subir.
+.chat_wifi_settings.json
+*.local.json
+
+# Entornos y editores
+.env
+.idea/
+.vscode/
+*.log
