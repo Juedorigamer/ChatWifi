@@ -1,33 +1,78 @@
-# Chat WiFi Uni
+# Chat WiFi
 
-Chat de escritorio para enviar mensajes entre dos computadoras conectadas a la misma red WiFi,
-sin necesidad de internet. Una PC actua como **servidor** y la otra como **cliente**.
+Chat de escritorio para Windows con dos modos:
 
-## Requisitos
+- **LAN:** conexión directa entre PCs de la misma WiFi, sin Internet.
+- **Online:** salas privadas con Supabase Realtime, desde cualquier red.
 
-- Python 3.8 o superior
-- Tkinter (viene incluido con Python en Windows)
-- Ambas PC en la misma red WiFi
+Los mensajes y archivos van cifrados de extremo a extremo (Fernet). Incluye
+beta Android (página web) y actualizaciones automáticas desde GitHub Releases.
 
-## Uso
+## Descargar
 
-```bash
-python ChatWiFi_Uni.py
+La última versión está en la pestaña **Releases** de este repositorio:
+
+- `ChatWiFi_Setup_2.4.7.exe` — instalador.
+- `latest.json` — manifiesto de actualizaciones.
+
+No hace falta instalar Python: el instalador incluye todo.
+
+## Reconstruir desde el código
+
+Requisitos:
+
+- Python 3.11 o superior.
+- Windows 10/11 de 64 bits.
+
+```powershell
+python -m pip install -r requirements.txt
+python -m PyInstaller ChatWiFi.spec --noconfirm
+& "C:\Program Files\Inno Setup 7\ISCC.exe" installer\ChatWiFi.iss
 ```
 
-1. En la **PC 1**: selecciona *Servidor*, anota la IP que aparece y pulsa **Iniciar Servidor**.
-2. En la **PC 2**: selecciona *Cliente*, escribe la IP de la PC 1 y pulsa **Conectar**.
-3. Ambos deben usar el mismo puerto (por defecto `5000`).
+El instalador queda en `dist\ChatWiFi_Setup_<versión>.exe`.
 
-> Si no conecta, revisa el Firewall de Windows: debe permitir Python en redes privadas.
+## Publicar una actualización
+
+1. Sube `APP_VERSION` en `chat.py` y `MyAppVersion` en `installer\ChatWiFi.iss`.
+2. Compila con PyInstaller e Inno Setup.
+3. Publica:
+
+```powershell
+$env:GITHUB_TOKEN = "ghp_..."
+.\publicar_actualizacion.ps1 -Notes "Novedades de la versión"
+```
+
+Sin token, el script genera `dist\latest.json` y muestra los pasos para subir
+los archivos a mano.
+
+## Seguridad
+
+- La app usa solo la clave **publicable** de Supabase; nunca la `service_role`.
+- El secreto de la sala no se guarda en disco.
+- Los mensajes y archivos van cifrados con Fernet antes de salir del equipo.
+- La seguridad real está en las políticas RLS de Supabase, no en esconder la URL.
+- No subas nunca tokens, claves de servicio ni el archivo de ajustes local.
 
 ## Estructura
 
-```
-ChatWiFi_Uni.py     Aplicacion completa (interfaz + red)
+```text
+chat.py                  App de escritorio (PyQt6)
+supabase_realtime.py     Capa online (Supabase Realtime + Storage)
+message_protocol.py      Sobre común de mensajes LAN/Online
+estilos_chat.css         Temas y estilos
+installer/ChatWiFi.iss   Instalador (Inno Setup)
+android_beta.html        Beta móvil (se abre en Chrome)
+android_beta_server.py   Servidor local de la beta Android
+docs/                    Guías, capturas y análisis
+requirements.txt         Dependencias
+legacy/                  Versiones antiguas conservadas
 ```
 
 ## Notas
 
-- La configuracion local se guarda en `.chat_wifi_settings.json`, que esta en `.gitignore`
-  porque contiene credenciales. No lo subas al repositorio.
+- El modo Online usa Supabase gratuito: 200 conexiones, 2 millones de
+  mensajes/mes, 1 GB de Storage y 50 MB por archivo.
+- El proyecto se pausa tras 7 días sin actividad.
+- Sin firma digital, SmartScreen puede pedir “Más información → Ejecutar de
+  todas formas”.

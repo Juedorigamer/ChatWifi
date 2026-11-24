@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba de Interfaz - Chat WiFi</title>
+    <style>
+        /* RESET BÁSICO */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+        body { background-color: #e9ecef; height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        
+        /* BOTONES DE NAVEGACIÓN SUPERIOR (Solo para la prueba) */
+        .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .nav-btn { padding: 10px 20px; cursor: pointer; border: 2px solid #212529; border-radius: 8px; background: #fff; font-weight: bold; }
+        .nav-btn.activo { background: #212529; color: #fff; }
+
+        /* CONTENEDOR DE LAS PANTALLAS */
+        .pantalla {
+            display: none; /* Se ocultan todas por defecto */
+            width: 100%; max-width: 1000px; height: 600px;
+            border: 4px solid #212529; background-color: #fff; padding: 20px;
+            position: relative; flex-direction: column; border-radius: 8px;
+        }
+        .pantalla.activa { display: flex; } /* Solo se muestra la que tiene la clase 'activa' */
+
+        /* CLASES REUTILIZABLES */
+        .bloque { border: 2px solid #212529; border-radius: 8px; padding: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold; background: #f8f9fa; }
+        .btn-click { cursor: pointer; transition: 0.2s; }
+        .btn-click:hover { opacity: 0.8; transform: scale(0.98); }
+
+        /* ============================
+           CSS: SERVIDORES
+           ============================ */
+        .servidores-top { display: flex; gap: 20px; height: 70%; margin-bottom: 20px; }
+        .servidores-tabla { flex-grow: 1; display: grid; grid-template-columns: 1fr 2fr 1fr; border: 3px solid #212529; border-radius: 8px; }
+        .tabla-col { border-right: 2px solid #212529; display: flex; flex-direction: column; }
+        .tabla-col:last-child { border-right: none; }
+        .tabla-header { border-bottom: 2px solid #212529; padding: 10px; text-align: center; font-weight: bold; background: #dee2e6; }
+        .servidores-opciones { width: 200px; border: 3px solid #212529; border-radius: 12px; display: flex; align-items: center; justify-content: center; text-align: center; font-weight: bold; }
+        .servidores-bottom { display: flex; justify-content: space-between; align-items: flex-end; height: 25%; }
+        .btn-accion { padding: 10px 30px; border: 3px solid #212529; border-radius: 20px; font-weight: bold; cursor: pointer; }
+        
+        /* ============================
+           CSS: AJUSTES
+           ============================ */
+        .ajustes-volver { border: 3px solid #212529; border-radius: 15px; padding: 10px 40px; background-color: #ff4d4d; color: black; font-weight: bold; width: fit-content; margin-bottom: 40px; }
+        .ajustes-contenido { display: flex; gap: 50px; height: 60%; }
+        .ajustes-menu-izq { border-right: 4px solid #212529; padding-right: 40px; display: flex; flex-direction: column; gap: 30px; font-size: 1.2rem; font-weight: bold;}
+        .input-dropdown { display: flex; align-items: center; gap: 15px; font-weight: bold;}
+        .caja-verde { border: 3px solid #212529; border-radius: 10px; background-color: #33cc33; width: 150px; height: 40px; display: flex; justify-content: flex-end; padding-right: 10px; align-items: center; }
+        .btn-aplicar { border: 3px solid #cccc00; border-radius: 15px; padding: 10px 40px; font-weight: bold; color: #999900; margin-top: 20px; align-self: flex-start; }
+        
+        /* ============================
+           CSS: CHAT
+           ============================ */
+        .chat-app { display: flex; gap: 20px; height: 100%; width: 100%; }
+        .chat-izq { display: flex; flex-direction: column; gap: 15px; width: 220px; }
+        .panel-usuarios { flex-grow: 1; font-size: 1.5rem; background-color: #ff8533; border: 3px solid #212529;}
+        .chat-der { display: flex; flex-direction: column; gap: 15px; flex-grow: 1; }
+        .chat-header { display: flex; justify-content: space-between; }
+        .area-chat { flex-grow: 1; display: flex; flex-direction: column; background-color: #ced4da; border: 3px solid #212529; border-radius: 12px; position: relative; padding: 20px; justify-content: center; align-items: center; }
+        .burbuja-ejemplo { width: 200px; height: 40px; border-radius: 20px; position: absolute; border: 2px solid #212529;}
+        .burbuja-1 { background-color: #80dfff; left: 20px; top: 40%; }
+        .burbuja-2 { background-color: #6699cc; right: 20px; bottom: 20%; }
+        .chat-input { display: flex; gap: 15px; align-items: center; }
+        .barra-texto { flex-grow: 1; border-radius: 20px; background-color: #339933; padding: 10px; color: black; border: 3px solid #212529;}
+    </style>
+</head>
+<body>
+
+    <!-- MENÚ DE PRUEBA EXTERNO -->
+    <div class="nav-tabs">
+        <button class="nav-btn" onclick="mostrarPantalla('servidores', this)">Ver Pestaña: Servidores</button>
+        <button class="nav-btn activo" onclick="mostrarPantalla('chat', this)">Ver Pestaña: Chat</button>
+        <button class="nav-btn" onclick="mostrarPantalla('ajustes', this)">Ver Pestaña: Ajustes</button>
+    </div>
+
+    <!-- PANTALLA 1: SERVIDORES -->
+    <div id="servidores" class="pantalla">
+        <div class="servidores-top">
+            <div class="servidores-tabla">
+                <div class="tabla-col"><div class="tabla-header">nombre</div></div>
+                <div class="tabla-col"><div class="tabla-header">servidor ip y usuarios conectados</div></div>
+                <div class="tabla-col"><div class="tabla-header">metodo de auth</div></div>
+            </div>
+            <div class="servidores-opciones">opciones<br>de claves</div>
+        </div>
+        <div class="servidores-bottom">
+            <div style="display: flex; gap: 15px;">
+                <div class="btn-accion btn-click">conectar</div>
+                <div class="btn-accion btn-click">buscar</div>
+                <div class="btn-accion btn-click">cancelar</div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div class="btn-accion btn-click" style="border-radius: 10px;" onclick="mostrarPantalla('chat', document.querySelectorAll('.nav-btn')[1])">chat</div>
+                <div class="btn-accion btn-click" style="border-radius: 10px;" onclick="mostrarPantalla('ajustes', document.querySelectorAll('.nav-btn')[2])">ajustes</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PANTALLA 2: CHAT (Activa por defecto al abrir) -->
+    <div id="chat" class="pantalla activa">
+        <div class="chat-app">
+            <div class="chat-izq">
+                <div class="bloque btn-click" style="background-color: #ff99cc; border-radius: 20px;" onclick="mostrarPantalla('ajustes', document.querySelectorAll('.nav-btn')[2])">AJUSTES</div>
+                <div class="bloque panel-usuarios">USUARIOS</div>
+                <div class="bloque btn-click" style="background-color: #ff1a1a; border-radius: 20px;">DESCONECTAR</div>
+            </div>
+            <div class="chat-der">
+                <div class="chat-header">
+                    <div class="bloque btn-click" style="background-color: #00ccff; border-radius: 20px;" onclick="mostrarPantalla('servidores', document.querySelectorAll('.nav-btn')[0])">SERVIDORES</div>
+                    <div class="bloque" style="background-color: #ffff00; border-radius: 20px;">nametag</div>
+                </div>
+                <div class="area-chat">
+                    <h1 style="color: #495057;">CHAT</h1>
+                    <div class="burbuja-ejemplo burbuja-1"></div>
+                    <div class="burbuja-ejemplo burbuja-2"></div>
+                </div>
+                <div class="chat-input">
+                    <div class="bloque barra-texto">BARRA DE TEXTO</div>
+                    <div class="btn-click" style="font-size: 2.5rem; line-height: 1;">⇨</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PANTALLA 3: AJUSTES -->
+    <div id="ajustes" class="pantalla">
+        <div class="ajustes-volver btn-click" onclick="mostrarPantalla('chat', document.querySelectorAll('.nav-btn')[1])">VOLVER</div>
+        
+        <div class="ajustes-contenido">
+            <div class="ajustes-menu-izq">
+                <span>graficos</span>
+                <span>privacidad</span>
+                <span>otros</span>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+                <div class="input-dropdown">
+                    <div class="caja-verde"><span style="color: yellow;">⬇</span></div>
+                    <span>tema</span>
+                </div>
+                <div class="input-dropdown">
+                    <div class="caja-verde"><span style="color: yellow;">⬇</span></div>
+                    <span>caligrafia</span>
+                </div>
+                <div class="btn-aplicar btn-click">aplicar</div>
+            </div>
+        </div>
+        <h1 style="position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); font-size: 4rem; color: #212529;">AJUSTES</h1>
+    </div>
+
+    <!-- SCRIPT DE NAVEGACIÓN -->
+    <script>
+        function mostrarPantalla(idPantalla, botonPulsado) {
+            document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('activa'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('activo'));
+            
+            document.getElementById(idPantalla).classList.add('activa');
+            if(botonPulsado) botonPulsado.classList.add('activo');
+        }
+    </script>
+</body>
+</html>

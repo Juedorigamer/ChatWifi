@@ -1,0 +1,135 @@
+﻿CHAT WIFI 2.4.7 - INSTRUCCIONES
+================================
+
+QUÃ‰ ES
+Chat privado para PCs con dos modos:
+
+- LAN: misma red WiFi, sin Internet.
+- Online: desde cualquier red con Supabase Realtime.
+  No hay que abrir puertos ni instalar VPNs.
+
+Los mensajes y archivos van cifrados de extremo a extremo (Fernet).
+
+REQUISITOS
+- Windows 10 u 11 de 64 bits.
+- Para LAN: ambas PCs en la misma WiFi.
+- Para Online: conexiÃ³n a Internet.
+- No hace falta instalar Python: todo va dentro de la carpeta ChatWiFi.
+
+INSTALACIÃ“N
+OpciÃ³n A (instalador):
+1. Ejecuta ChatWiFi_Setup_2.4.7.exe.
+2. Se instala solo para tu usuario, sin pedir administrador.
+3. Si SmartScreen avisa: "MÃ¡s informaciÃ³n" > "Ejecutar de todas formas".
+4. Abre Chat WiFi desde el menÃº Inicio.
+
+OpciÃ³n B (portable):
+1. Descomprime el ZIP completo.
+2. Ejecuta ChatWiFi\ChatWiFi.exe.
+
+MODO ONLINE
+1. Ve a "Servidores" y selecciona "Online".
+2. Escribe un secreto. Todos deben usar EL MISMO.
+3. Pulsa "Crear sala".
+4. La app genera un cÃ³digo de 6 caracteres y lo copia.
+5. Comparte el cÃ³digo.
+6. En la otra PC: Online, mismo secreto, cÃ³digo y "Unirse".
+
+El creador es el ADMINISTRADOR de la sala.
+Por defecto, cada nuevo miembro necesita aprobaciÃ³n.
+El administrador pulsa "ADMINISTRAR SALA" en el chat para:
+- Ver solicitudes pendientes.
+- Aprobar o rechazar.
+- Expulsar y bloquear miembros.
+- Cerrar la sala para todos.
+
+TambiÃ©n puedes crear la sala sin aprobaciÃ³n (desmarca la casilla)
+y elegir duraciÃ³n: sin caducidad, 1 hora, 24 horas o 7 dÃ­as.
+
+El modo Online no necesita abrir puertos.
+
+MODO LAN
+1. Una PC: LAN, secreto y "Crear sala LAN".
+2. Otra: mismo secreto, "Buscar", seleccionar y "Conectar".
+3. Si no aparece, ejecuta PERMITIR_FIREWALL.bat como administrador
+   en ambas PCs.
+
+ARCHIVOS
+- BotÃ³n ðŸ“Ž junto a la barra de formato.
+- Arrastra un archivo a la ventana del chat.
+- Pega una imagen con Ctrl+V.
+- LÃ­mite Online: 45 MB por archivo.
+- Los archivos se cifran antes de subirse a Supabase Storage.
+- La descarga usa un enlace firmado con caducidad.
+- Los archivos se guardan en Descargas\ChatWiFi.
+- Auto-borrado: Ajustes > Privacidad > Borrar archivos.
+  Nunca, 1 día, 7 días o 30 días.
+  Los archivos online se borran de Supabase cuando el emisor
+  vuelva a abrir la app después del plazo.
+- Las imÃ¡genes muestran una miniatura automÃ¡tica.
+- LÃ­mite LAN: 10 MB.
+
+CHAT
+- Responder/citar: clic derecho en un mensaje > Responder.
+- Ctrl+R responde al último mensaje recibido.
+- Reacciones: clic derecho > Reaccionar.
+- Enviado/LeÃ­do: aparece en la hora del mensaje.
+- Mensajes efÃ­meros: Ajustes > Privacidad.
+- Emojis: botÃ³n ðŸ˜Š.
+- Formato: B, I, </> o **negrita**, *cursiva*, `cÃ³digo`.
+- Enlaces: clic para abrir en el navegador con confirmaciÃ³n.
+- ImÃ¡genes por URL: vista previa automÃ¡tica.
+- DeduplicaciÃ³n de mensajes repetidos.
+
+NOTIFICACIONES
+- Avisos nativos de Windows al recibir mensajes o archivos.
+- Icono en la bandeja: clic para abrir, menú para silenciar o salir.
+- Se pueden desactivar en Ajustes > Privacidad.
+
+PRIVACIDAD
+- Ajustes > Privacidad:
+  - Compartir confirmaciones de leÃ­do.
+  - ProtecciÃ³n contra capturas de pantalla.
+  - Comandos remotos: Permitir sin preguntar / Preguntar / Ignorar.
+  - Cooldown de 30 segundos entre comandos remotos.
+  - Limpiar conversaciÃ³n.
+  - Borrar todo y cerrar (pÃ¡nico).
+
+COMANDOS
+- /off              apaga el equipo remoto (todos)
+- /off @usuario     apaga solo al usuario indicado
+- /screamer         muestra una alerta falsa en todos
+- /screamer @usuario muestra la alerta solo al usuario indicado
+- /color rojo Hola  envÃ­a "Hola" en color rojo
+
+Si no escribes @usuario, el comando afecta a todos los conectados.
+Hay un cooldown de 30 segundos entre comandos remotos.
+
+OTROS
+- La ventana recuerda tamaÃ±o y posiciÃ³n.
+- Solo se permite una instancia de la app.
+- Latencia en la cabecera del chat.
+- "Supabase" en el panel Online comprueba el estado del proyecto.
+- Ajustes en %USERPROFILE%\.chat_wifi_settings.json
+
+ACTUALIZACIONES
+- La app comprueba GitHub Releases al iniciar.
+- TambiÃ©n puedes pulsar Ajustes > Otros > Buscar actualizaciones.
+- Si hay una versiÃ³n nueva, la descarga, verifica su SHA-256 y abre el instalador.
+- No hace falta que el amigo vuelva a recibir el archivo por WhatsApp.
+- Sin firma digital, SmartScreen puede pedir "MÃ¡s informaciÃ³n" > "Ejecutar de todas formas".
+- Repositorio: github.com/Juedorigamer/ChatWifi
+
+SI ALGO FALLA
+- "Secreto distinto o corrupto": ambos deben usar el mismo secreto.
+- No aparece la sala online: revisa Internet, cÃ³digo y secreto.
+- "Esperando aprobaciÃ³n": el administrador debe aprobar tu entrada.
+- No aparece la sala LAN: ejecuta PERMITIR_FIREWALL.bat en ambas PCs.
+- SmartScreen: el ejecutable no estÃ¡ firmado digitalmente.
+
+NOTAS
+- El modo Online usa Supabase (auth anÃ³nima + canales privados + RLS).
+- El modo LAN usa TCP 45873 y UDP 45874.
+- Supabase gratuito: 200 conexiones, 2 millones de mensajes/mes,
+  1 GB de Storage y 50 MB por archivo.
+- El proyecto se pausa tras 7 dÃ­as sin actividad.

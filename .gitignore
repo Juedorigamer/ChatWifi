@@ -6,8 +6,18 @@ __pycache__/
 venv/
 env/
 
-# Configuracion local: contiene shared_secret y tokens de Supabase. NUNCA subir.
+# Salidas de compilación (se publican como assets en GitHub Releases)
+build/
+dist/
+*.exe
+*.zip
+*.msi
+
+# Configuración y datos locales: pueden contener secretos o datos personales
 .chat_wifi_settings.json
+clave_chat.key
+sala_chat.json
+descargas_chat/
 *.local.json
 
 # Entornos y editores

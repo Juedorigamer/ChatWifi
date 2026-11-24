@@ -1,0 +1,1415 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1220">
+<meta name="description" content="Chat WiFi Beta: prueba de conexión y chat móvil sobre las mismas salas de Chat WiFi.">
+<title>Chat WiFi · Beta Android</title>
+<style>
+  :root {
+    --bg: #08101d;
+    --bg-2: #0d1728;
+    --panel: #111d31;
+    --panel-2: #16243b;
+    --line: #24344f;
+    --line-soft: #1a2942;
+    --text: #e9f0fb;
+    --muted: #93a6c2;
+    --muted-2: #6f84a3;
+    --accent: #2dd4bf;
+    --accent-2: #38bdf8;
+    --accent-ink: #052a2a;
+    --ok: #34d399;
+    --warn: #fbbf24;
+    --danger: #fb7185;
+    --bubble-in: #16243b;
+    --bubble-out: #0f5f5a;
+    --shadow: 0 24px 60px rgba(0, 0, 0, .35);
+    --radius: 18px;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    color: var(--text);
+    background:
+      radial-gradient(900px 520px at 85% -10%, rgba(56, 189, 248, .16), transparent 60%),
+      radial-gradient(700px 500px at 0% 100%, rgba(45, 212, 191, .10), transparent 55%),
+      linear-gradient(160deg, #08101d 0%, #0a1424 55%, #07101c 100%);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.45;
+    overflow: hidden;
+  }
+  button, input, textarea { font: inherit; }
+  button { color: inherit; }
+  .hidden { display: none !important; }
+  .app {
+    width: 100%;
+    max-width: 860px;
+    height: 100vh;
+    height: 100dvh;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+  .screen { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+
+  /* ── Login ───────────────────────────────────────────── */
+  .connect-screen {
+    overflow-y: auto;
+    padding: max(18px, env(safe-area-inset-top)) 18px calc(24px + env(safe-area-inset-bottom));
+    scrollbar-width: thin;
+  }
+  .connect-wrap { width: 100%; max-width: 560px; margin: auto; }
+  .brand { display: flex; align-items: center; gap: 12px; margin: 10px 2px 26px; }
+  .logo {
+    width: 48px; height: 48px; flex: 0 0 48px; border-radius: 15px;
+    display: grid; place-items: center;
+    background: linear-gradient(145deg, var(--accent), var(--accent-2));
+    color: #06222b; font-weight: 900; letter-spacing: -.06em; font-size: 19px;
+    box-shadow: 0 10px 26px rgba(45, 212, 191, .20);
+  }
+  .brand h1 { margin: 0; font-size: 20px; letter-spacing: -.02em; }
+  .brand p { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+  .beta-pill {
+    margin-left: auto; border: 1px solid rgba(45, 212, 191, .35);
+    background: rgba(45, 212, 191, .10); color: #7de9dd;
+    font-size: 11px; font-weight: 800; letter-spacing: .12em;
+    padding: 6px 9px; border-radius: 999px;
+  }
+  .lead { margin: 0 0 18px; color: var(--muted); font-size: 14.5px; }
+  .card {
+    background: linear-gradient(180deg, rgba(20, 34, 55, .92), rgba(14, 25, 43, .94));
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    padding: 18px;
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(12px);
+  }
+  .field { display: block; margin-bottom: 14px; }
+  .field > span { display: block; color: var(--muted); font-size: 12.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; margin: 0 0 7px 2px; }
+  .input-wrap { position: relative; }
+  input[type="text"], input[type="password"], textarea {
+    width: 100%; border: 1px solid var(--line); border-radius: 13px;
+    background: rgba(5, 12, 23, .62); color: var(--text);
+    padding: 13px 14px; outline: none;
+    transition: border-color .16s, box-shadow .16s, background .16s;
+  }
+  input::placeholder, textarea::placeholder { color: var(--muted-2); }
+  input:focus, textarea:focus {
+    border-color: rgba(45, 212, 191, .65);
+    box-shadow: 0 0 0 3px rgba(45, 212, 191, .12);
+    background: rgba(5, 12, 23, .82);
+  }
+  #code { text-transform: uppercase; letter-spacing: .22em; font-weight: 800; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .secret-wrap input { padding-right: 68px; }
+  .eye {
+    position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+    border: 0; background: transparent; color: var(--muted); font-size: 12px;
+    font-weight: 700; padding: 8px 10px; border-radius: 9px; cursor: pointer;
+  }
+  .eye:hover { color: var(--text); background: rgba(255,255,255,.05); }
+  .btn {
+    width: 100%; border: 1px solid transparent; border-radius: 14px;
+    padding: 14px 16px; font-weight: 800; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 9px;
+    transition: transform .12s, filter .16s, opacity .16s, background .16s;
+  }
+  .btn:active { transform: scale(.985); }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), #53e0c9);
+    color: var(--accent-ink);
+    box-shadow: 0 10px 26px rgba(45, 212, 191, .18);
+  }
+  .btn-primary:hover:not(:disabled) { filter: brightness(1.05); }
+  .btn-secondary {
+    background: rgba(56, 189, 248, .07);
+    border-color: rgba(56, 189, 248, .28);
+    color: #a9e4ff;
+  }
+  .btn-secondary:hover:not(:disabled) { background: rgba(56, 189, 248, .12); }
+  .or {
+    display: flex; align-items: center; gap: 10px; color: var(--muted-2);
+    font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+    margin: 14px 0;
+  }
+  .or::before, .or::after { content: ""; height: 1px; flex: 1; background: var(--line-soft); }
+  .status-box {
+    display: none; margin-top: 14px; padding: 11px 13px; border-radius: 12px;
+    border: 1px solid var(--line); background: rgba(5, 12, 23, .52);
+    color: var(--muted); font-size: 13px; overflow-wrap: anywhere;
+  }
+  .status-box.show { display: block; }
+  .status-box.error { border-color: rgba(251, 113, 133, .35); background: rgba(251, 113, 133, .08); color: #fecdd3; }
+  .status-box.ok { border-color: rgba(52, 211, 153, .35); background: rgba(52, 211, 153, .08); color: #a7f3d0; }
+  .status-box.working { border-color: rgba(56, 189, 248, .30); background: rgba(56, 189, 248, .07); color: #bae6fd; }
+  .hint { margin: 18px 2px 0; color: var(--muted); font-size: 13px; }
+  .hint strong { color: #cfe0f5; }
+  .hint ol { margin: 8px 0 0; padding-left: 20px; }
+  .hint li { margin: 5px 0; }
+  .tech { margin: 18px 2px 0; color: var(--muted-2); font-size: 12px; }
+  .tech summary { cursor: pointer; color: var(--muted); font-weight: 700; }
+  .tech p { margin: 8px 0 0; }
+  .tech code { color: #b6cbe6; background: rgba(255,255,255,.05); padding: 1px 5px; border-radius: 5px; }
+
+  /* ── Waiting ─────────────────────────────────────────── */
+  .waiting-screen { padding: 24px 18px calc(24px + env(safe-area-inset-bottom)); justify-content: center; align-items: center; text-align: center; }
+  .wait-card { width: 100%; max-width: 420px; }
+  .spinner {
+    width: 58px; height: 58px; margin: 0 auto 20px; border-radius: 50%;
+    border: 3px solid rgba(45, 212, 191, .16); border-top-color: var(--accent);
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .wait-card h2 { margin: 0 0 8px; font-size: 21px; }
+  .wait-card p { margin: 0 0 20px; color: var(--muted); font-size: 14px; }
+  .wait-code {
+    display: inline-block; margin-bottom: 20px; padding: 10px 16px; border-radius: 12px;
+    background: rgba(45, 212, 191, .08); border: 1px solid rgba(45, 212, 191, .25);
+    color: #8ff0e4; font-weight: 900; letter-spacing: .18em;
+  }
+  .wait-actions { display: grid; gap: 10px; }
+
+  /* ── Chat ────────────────────────────────────────────── */
+  .chat-screen { height: 100%; }
+  .chat-head {
+    display: flex; align-items: center; gap: 10px;
+    padding: max(10px, env(safe-area-inset-top)) 12px 10px;
+    border-bottom: 1px solid var(--line-soft);
+    background: rgba(8, 16, 29, .80);
+    backdrop-filter: blur(14px);
+    z-index: 5;
+  }
+  .icon-btn {
+    width: 42px; height: 42px; flex: 0 0 42px; display: grid; place-items: center;
+    border: 1px solid var(--line); border-radius: 13px;
+    background: rgba(255,255,255,.03); cursor: pointer;
+  }
+  .icon-btn:hover { background: rgba(255,255,255,.07); }
+  .icon-btn svg { width: 20px; height: 20px; }
+  .chat-title-wrap { min-width: 0; flex: 1; }
+  .room-title { display: flex; align-items: center; gap: 8px; font-weight: 850; letter-spacing: -.01em; white-space: nowrap; }
+  .room-code {
+    color: #8ff0e4; letter-spacing: .14em; cursor: pointer; border-bottom: 1px dashed rgba(143, 240, 228, .35);
+  }
+  .room-code:active { opacity: .7; }
+  .chat-sub { color: var(--muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
+  .conn-badge {
+    flex: 0 0 auto; display: flex; align-items: center; gap: 6px;
+    border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 9px; font-size: 11px; font-weight: 800; color: var(--muted);
+    background: rgba(255,255,255,.03); max-width: 118px;
+  }
+  .conn-badge .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--warn); box-shadow: 0 0 0 3px rgba(251,191,36,.12); }
+  .conn-badge.ok { color: #a7f3d0; border-color: rgba(52,211,153,.30); background: rgba(52,211,153,.07); }
+  .conn-badge.ok .dot { background: var(--ok); box-shadow: 0 0 0 3px rgba(52,211,153,.14); }
+  .conn-badge.bad { color: #fecdd3; border-color: rgba(251,113,133,.30); background: rgba(251,113,133,.07); }
+  .conn-badge.bad .dot { background: var(--danger); box-shadow: 0 0 0 3px rgba(251,113,133,.14); }
+  .userbar {
+    display: flex; align-items: center; gap: 7px; padding: 8px 12px;
+    border-bottom: 1px solid var(--line-soft); overflow-x: auto;
+    scrollbar-width: none; background: rgba(11, 20, 35, .55);
+  }
+  .userbar::-webkit-scrollbar { display: none; }
+  .userbar-label { flex: 0 0 auto; color: var(--muted-2); font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+  .chips { display: flex; gap: 6px; min-width: 0; }
+  .chip {
+    flex: 0 0 auto; display: inline-flex; align-items: center; gap: 6px;
+    border: 1px solid var(--line-soft); border-radius: 999px;
+    background: rgba(255,255,255,.025); color: #c9d8ec;
+    padding: 4px 9px; font-size: 11.5px; white-space: nowrap;
+  }
+  .chip::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--ok); }
+  .chip.me { border-color: rgba(45,212,191,.28); color: #9ff2e8; }
+  .user-count { flex: 0 0 auto; margin-left: auto; color: var(--muted-2); font-size: 11px; font-weight: 800; }
+
+  .messages {
+    flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+    padding: 14px 12px 18px; display: flex; flex-direction: column; gap: 9px;
+    scrollbar-width: thin;
+  }
+  .msg-row { display: flex; flex-direction: column; align-items: flex-start; max-width: 88%; }
+  .msg-row.own { align-self: flex-end; align-items: flex-end; }
+  .msg-sender { color: var(--muted); font-size: 11px; font-weight: 750; margin: 0 5px 3px; }
+  .bubble {
+    padding: 9px 12px; border-radius: 16px 16px 16px 6px;
+    background: var(--bubble-in); border: 1px solid rgba(255,255,255,.045);
+    color: var(--text); font-size: 15px; overflow-wrap: anywhere;
+    white-space: pre-wrap; box-shadow: 0 4px 14px rgba(0,0,0,.12);
+  }
+  .own .bubble {
+    background: linear-gradient(145deg, #0d6b64, #0b5c59);
+    border-color: rgba(45, 212, 191, .20);
+    border-radius: 16px 16px 6px 16px;
+  }
+  .msg-meta { display: flex; align-items: center; gap: 6px; margin: 3px 5px 0; color: var(--muted-2); font-size: 10.5px; }
+  .msg-meta .state { color: #79ddcf; }
+  .msg-meta .state.fail { color: #fda4af; }
+  .system {
+    align-self: center; max-width: 92%; text-align: center;
+    color: var(--muted-2); font-size: 11.5px; padding: 4px 10px;
+    border-radius: 999px; background: rgba(255,255,255,.025);
+    border: 1px solid rgba(255,255,255,.035);
+  }
+  .system.warn { color: #fde68a; border-color: rgba(251,191,36,.16); background: rgba(251,191,36,.05); }
+  .system.bad { color: #fecdd3; border-color: rgba(251,113,133,.18); background: rgba(251,113,133,.06); }
+  .scroll-bottom {
+    position: absolute; right: 16px; bottom: calc(84px + env(safe-area-inset-bottom));
+    width: 42px; height: 42px; border-radius: 50%;
+    border: 1px solid var(--line); background: #142238; color: var(--text);
+    display: grid; place-items: center; cursor: pointer; z-index: 4;
+    box-shadow: 0 8px 22px rgba(0,0,0,.35);
+  }
+  .composer {
+    display: flex; align-items: flex-end; gap: 8px;
+    padding: 9px 10px calc(9px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--line-soft);
+    background: rgba(8, 16, 29, .88); backdrop-filter: blur(14px);
+    z-index: 5;
+  }
+  .composer textarea {
+    resize: none; max-height: 128px; min-height: 46px; padding: 12px 13px;
+    border-radius: 15px; line-height: 1.35; display: block;
+  }
+  .send-btn {
+    width: 48px; height: 46px; flex: 0 0 48px; border-radius: 15px;
+    border: 0; background: linear-gradient(135deg, var(--accent), #53e0c9);
+    color: var(--accent-ink); display: grid; place-items: center; cursor: pointer;
+    box-shadow: 0 8px 20px rgba(45,212,191,.18);
+  }
+  .send-btn:disabled { opacity: .35; cursor: not-allowed; box-shadow: none; }
+  .send-btn svg { width: 21px; height: 21px; }
+  .chat-alert {
+    position: absolute; left: 12px; right: 12px; bottom: calc(76px + env(safe-area-inset-bottom));
+    z-index: 6; border-radius: 13px; padding: 10px 13px;
+    background: #3a1c28; border: 1px solid rgba(251,113,133,.35); color: #fecdd3;
+    font-size: 13px; box-shadow: 0 14px 34px rgba(0,0,0,.40);
+  }
+  .typing-dots span { animation: blink 1.1s infinite; }
+  .typing-dots span:nth-child(2) { animation-delay: .16s; }
+  .typing-dots span:nth-child(3) { animation-delay: .32s; }
+  @keyframes blink { 0%, 80%, 100% { opacity: .25; } 40% { opacity: 1; } }
+
+  @media (max-width: 420px) {
+    .grid-2 { grid-template-columns: 1fr; gap: 0; }
+    .conn-badge { max-width: 92px; }
+    .conn-badge .label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+  }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+  <!-- ── Pantalla de conexión ───────────────────────────── -->
+  <main class="screen connect-screen" id="screen-connect">
+    <div class="connect-wrap">
+      <header class="brand">
+        <div class="logo" aria-hidden="true">CW</div>
+        <div>
+          <h1>Chat WiFi</h1>
+          <p>Prueba de conexión y chat</p>
+        </div>
+        <span class="beta-pill">BETA</span>
+      </header>
+
+      <p class="lead">
+        Entra a una sala creada desde la PC o crea una sala de prueba.
+        Usa el mismo código y secreto en ambos equipos.
+      </p>
+
+      <form class="card" id="form-connect" autocomplete="off">
+        <label class="field">
+          <span>Tu nombre</span>
+          <input id="name" type="text" maxlength="40" placeholder="Ej. Teléfono" autocomplete="nickname" enterkeyhint="next">
+        </label>
+
+        <div class="grid-2">
+          <label class="field">
+            <span>Código de sala</span>
+            <input id="code" type="text" maxlength="6" placeholder="ABC123" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="next">
+          </label>
+          <label class="field">
+            <span>Secreto</span>
+            <div class="input-wrap secret-wrap">
+              <input id="secret" type="password" maxlength="120" placeholder="Mínimo 3" autocomplete="current-password" enterkeyhint="go">
+              <button class="eye" id="btn-eye" type="button" aria-label="Mostrar secreto">Ver</button>
+            </div>
+          </label>
+        </div>
+
+        <button class="btn btn-primary" id="btn-join" type="submit">
+          <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/></svg>
+          Unirse a la sala
+        </button>
+
+        <div class="or">o</div>
+
+        <button class="btn btn-secondary" id="btn-create" type="button">
+          <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          Crear sala de prueba
+        </button>
+
+        <div class="status-box" id="connect-status" role="status" aria-live="polite"></div>
+      </form>
+
+      <section class="hint">
+        <strong>Para probar con la PC:</strong>
+        <ol>
+          <li>En la PC: <strong>Servidores → Online</strong>, escribe un secreto y pulsa <strong>Crear sala</strong>.</li>
+          <li>Aquí escribe tu nombre, el código de 6 letras y el mismo secreto.</li>
+          <li>El administrador de la PC debe aprobar tu entrada.</li>
+        </ol>
+      </section>
+
+      <details class="tech">
+        <summary>Detalles técnicos</summary>
+        <p>Esta beta usa Supabase con autenticación anónima, canales privados y cifrado Fernet compatible con Chat WiFi 2.3. Solo conexión y texto; sin archivos ni administración.</p>
+        <p>Si falla la conexión, revisa primero la Wi-Fi. La app de escritorio y esta beta necesitan Internet para Supabase.</p>
+      </details>
+    </div>
+  </main>
+
+  <!-- ── Esperando aprobación ───────────────────────────── -->
+  <main class="screen waiting-screen hidden" id="screen-waiting">
+    <div class="wait-card">
+      <div class="spinner" aria-hidden="true"></div>
+      <h2>Esperando aprobación</h2>
+      <p>El administrador de la sala debe aceptar tu entrada. Esto se comprueba cada 3 segundos.</p>
+      <div class="wait-code" id="waiting-code">SALA</div>
+      <div class="wait-actions">
+        <button class="btn btn-secondary" id="btn-wait-cancel" type="button">Cancelar</button>
+      </div>
+      <p style="margin-top:16px" id="waiting-detail">Solicitud enviada.</p>
+    </div>
+  </main>
+
+  <!-- ── Chat ───────────────────────────────────────────── -->
+  <main class="screen chat-screen hidden" id="screen-chat">
+    <header class="chat-head">
+      <button class="icon-btn" id="btn-leave" type="button" aria-label="Salir de la sala" title="Salir">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+      </button>
+      <div class="chat-title-wrap">
+        <div class="room-title">Sala <span class="room-code" id="room-code" title="Toca para copiar">------</span></div>
+        <div class="chat-sub" id="chat-sub">Conectando…</div>
+      </div>
+      <div class="conn-badge" id="conn-badge"><span class="dot" aria-hidden="true"></span><span class="label">Conectando</span></div>
+    </header>
+
+    <div class="userbar">
+      <span class="userbar-label">En línea</span>
+      <div class="chips" id="users"></div>
+      <span class="user-count" id="user-count">0</span>
+    </div>
+
+    <div class="messages" id="messages" role="log" aria-live="polite" aria-relevant="additions"></div>
+
+    <button class="scroll-bottom hidden" id="scroll-bottom" type="button" aria-label="Ir al final">
+      <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>
+    </button>
+
+    <form class="composer" id="form-send">
+      <textarea id="input" rows="1" maxlength="4000" placeholder="Escribe un mensaje…" enterkeyhint="send" aria-label="Mensaje"></textarea>
+      <button class="send-btn" id="btn-send" type="submit" aria-label="Enviar" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+      </button>
+    </form>
+
+    <div class="chat-alert hidden" id="chat-alert" role="alert"></div>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  // ── Configuración ─────────────────────────────────────────────────────
+  var SUPABASE_URL = "https://uofdyltvfpbcjcpktqql.supabase.co";
+  var SUPABASE_KEY = "sb_publishable_Ny0lTst8JT0UZsYRKS_Dpw_xPhTVo8Z";
+  var SALT = "chatwifi_salt";
+  var PBKDF2_ITERATIONS = 100000;
+  var ROOM_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  var MAX_MESSAGES = 300;
+  var MAX_USERS = 10;
+
+  // ── Estado ────────────────────────────────────────────────────────────
+  var state = {
+    sb: null,
+    session: null,
+    userId: "",
+    username: "",
+    code: "",
+    secret: "",
+    roomId: "",
+    topic: "",
+    approved: false,
+    isAdmin: false,
+    expiresAt: 0,
+    channel: null,
+    subscribed: false,
+    presenceKey: randomHex(8),
+    seen: Object.create(null),
+    lastNames: [],
+    presenceStarted: false,
+    waitingTimer: null,
+    heartbeatTimer: null,
+    inRoom: false,
+    busy: false,
+    announced: false
+  };
+
+  // ── Utilidades DOM ────────────────────────────────────────────────────
+  function $(id) { return document.getElementById(id); }
+  function show(el, yes) { if (el) el.classList.toggle("hidden", !yes); }
+  function screen(name) {
+    show($("screen-connect"), name === "connect");
+    show($("screen-waiting"), name === "waiting");
+    show($("screen-chat"), name === "chat");
+    if (name === "chat") {
+      document.body.style.overflow = "hidden";
+      setTimeout(function () { $("input").focus(); }, 90);
+    } else {
+      document.body.style.overflow = "";
+    }
+  }
+
+  function connectStatus(text, type) {
+    var el = $("connect-status");
+    el.textContent = text || "";
+    el.className = "status-box" + (text ? " show" : "") + (type ? " " + type : "");
+  }
+
+  function setChatSub(text) { $("chat-sub").textContent = text; }
+
+  function setBadge(kind, text) {
+    var el = $("conn-badge");
+    el.className = "conn-badge" + (kind ? " " + kind : "");
+    el.querySelector(".label").textContent = text;
+  }
+
+  function alertChat(text) {
+    var el = $("chat-alert");
+    if (!text) { show(el, false); return; }
+    el.textContent = text;
+    show(el, true);
+    clearTimeout(alertChat._t);
+    alertChat._t = setTimeout(function () { show(el, false); }, 7000);
+  }
+
+  function timeText(ts) {
+    var d = ts ? new Date(ts * 1000) : new Date();
+    if (isNaN(d.getTime())) d = new Date();
+    return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+
+  function randomHex(bytes) {
+    var wa = CryptoJS.lib.WordArray.random(bytes);
+    return wa.toString(CryptoJS.enc.Hex);
+  }
+
+  function newId() { return randomHex(16); }
+
+  function generateCode() {
+    var hex = randomHex(6);
+    var out = "";
+    for (var i = 0; i < 6; i++) {
+      out += ROOM_ALPHABET[parseInt(hex.substr(i * 2, 2), 16) % ROOM_ALPHABET.length];
+    }
+    return out;
+  }
+
+  function safeParseTs(value) {
+    if (!value) return 0;
+    if (typeof value === "number") return value;
+    var t = Date.parse(String(value));
+    return isNaN(t) ? 0 : Math.floor(t / 1000);
+  }
+
+  function formatExpiry(ts) {
+    if (!ts) return "";
+    var d = new Date(ts * 1000);
+    if (isNaN(d.getTime())) return "";
+    return d.toLocaleString([], { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+  }
+
+  function copyText(text) {
+    function fallback() {
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      ta.setAttribute("readonly", "");
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand("copy"); } catch (e) {}
+      document.body.removeChild(ta);
+    }
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text).catch(fallback);
+    } else {
+      fallback();
+    }
+  }
+
+  // ── Fernet compatible (PBKDF2 + AES-CBC + HMAC-SHA256) ────────────────
+  function waToBytes(wa) {
+    var out = new Uint8Array(wa.sigBytes);
+    for (var i = 0; i < wa.sigBytes; i++) {
+      out[i] = (wa.words[i >>> 2] >>> (24 - (i % 4) * 8)) & 255;
+    }
+    return out;
+  }
+
+  function bytesToWa(bytes) {
+    var words = [];
+    for (var i = 0; i < bytes.length; i++) {
+      words[i >>> 2] = (words[i >>> 2] || 0) | (bytes[i] << (24 - (i % 4) * 8));
+    }
+    return CryptoJS.lib.WordArray.create(words, bytes.length);
+  }
+
+  function concatBytes(a, b) {
+    var out = new Uint8Array(a.length + b.length);
+    out.set(a, 0);
+    out.set(b, a.length);
+    return out;
+  }
+
+  function b64ToBytes(b64) {
+    var s = String(b64).replace(/-/g, "+").replace(/_/g, "/").replace(/\s+/g, "");
+    while (s.length % 4) s += "=";
+    var bin = atob(s);
+    var out = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return out;
+  }
+
+  function bytesToB64Url(bytes) {
+    var bin = "";
+    for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+    return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_");
+  }
+
+  function bytesToB64Std(bytes) {
+    var bin = "";
+    for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+    return btoa(bin);
+  }
+
+  function utf8Bytes(text) {
+    return new TextEncoder().encode(text);
+  }
+
+  function bytesToUtf8(bytes) {
+    return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+  }
+
+  var keyCache = { secret: "", keyBytes: null };
+
+  function deriveKey(secret) {
+    if (keyCache.secret === secret && keyCache.keyBytes) return keyCache.keyBytes;
+    var key = CryptoJS.PBKDF2(
+      CryptoJS.enc.Utf8.parse(secret),
+      CryptoJS.enc.Utf8.parse(SALT),
+      { keySize: 256 / 32, iterations: PBKDF2_ITERATIONS, hasher: CryptoJS.algo.SHA256 }
+    );
+    keyCache = { secret: secret, keyBytes: waToBytes(key) };
+    return keyCache.keyBytes;
+  }
+
+  function fernetEncrypt(plainText, secret) {
+    var keyBytes = deriveKey(secret);
+    var signingKey = keyBytes.slice(0, 16);
+    var encryptionKey = keyBytes.slice(16, 32);
+    var iv = waToBytes(CryptoJS.lib.WordArray.random(16));
+    var ts = Math.floor(Date.now() / 1000);
+
+    var header = new Uint8Array(9);
+    header[0] = 0x80;
+    var view = new DataView(header.buffer);
+    view.setBigUint64(1, BigInt(ts), false);
+
+    var encrypted = CryptoJS.AES.encrypt(
+      bytesToWa(utf8Bytes(plainText)),
+      bytesToWa(encryptionKey),
+      { iv: bytesToWa(iv), mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7 }
+    );
+    var ciphertext = waToBytes(encrypted.ciphertext);
+    var signed = concatBytes(header, concatBytes(iv, ciphertext));
+    var mac = waToBytes(CryptoJS.HmacSHA256(bytesToWa(signed), bytesToWa(signingKey)));
+    return bytesToB64Url(concatBytes(signed, mac));
+  }
+
+  function fernetDecrypt(token, secret) {
+    var keyBytes = deriveKey(secret);
+    var signingKey = keyBytes.slice(0, 16);
+    var encryptionKey = keyBytes.slice(16, 32);
+    var data = b64ToBytes(token);
+    if (data.length < 1 + 8 + 16 + 16 + 32) throw new Error("Token Fernet demasiado corto.");
+    if (data[0] !== 0x80) throw new Error("Versión Fernet no soportada.");
+
+    var signed = data.slice(0, data.length - 32);
+    var mac = data.slice(data.length - 32);
+    var expected = waToBytes(CryptoJS.HmacSHA256(bytesToWa(signed), bytesToWa(signingKey)));
+
+    var diff = expected.length ^ mac.length;
+    for (var i = 0; i < expected.length && i < mac.length; i++) diff |= expected[i] ^ mac[i];
+    if (diff !== 0) throw new Error("Firma HMAC incorrecta: el secreto no coincide.");
+
+    var iv = data.slice(9, 25);
+    var ciphertext = data.slice(25, data.length - 32);
+    var params = CryptoJS.lib.CipherParams.create({ ciphertext: bytesToWa(ciphertext) });
+    var decrypted = CryptoJS.AES.decrypt(
+      params,
+      bytesToWa(encryptionKey),
+      { iv: bytesToWa(iv), mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7 }
+    );
+    var plain = waToBytes(decrypted);
+    if (!plain.length) throw new Error("No se pudo descifrar el mensaje.");
+    return bytesToUtf8(plain);
+  }
+
+  function encryptBroadcast(env, secret) {
+    return bytesToB64Std(utf8Bytes(fernetEncrypt(JSON.stringify(env), secret)));
+  }
+
+  function decryptBroadcast(data, secret) {
+    var token = bytesToUtf8(b64ToBytes(data));
+    return JSON.parse(fernetDecrypt(token, secret));
+  }
+
+  // Expuesto solo para diagnóstico y pruebas de interoperabilidad.
+  window.BetaCrypto = {
+    deriveKey: function (secret) { return Array.from(deriveKey(secret)); },
+    encrypt: fernetEncrypt,
+    decrypt: fernetDecrypt,
+    encryptBroadcast: encryptBroadcast,
+    decryptBroadcast: decryptBroadcast
+  };
+
+  // ── Supabase ──────────────────────────────────────────────────────────
+  function getClient() {
+    if (state.sb) return state.sb;
+    if (!window.supabase || !window.supabase.createClient) {
+      throw new Error("No se cargó Supabase. Revisa tu conexión a Internet y recarga la página.");
+    }
+    if (!window.CryptoJS) {
+      throw new Error("No se cargó CryptoJS. Revisa tu conexión a Internet y recarga la página.");
+    }
+    state.sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
+    });
+    return state.sb;
+  }
+
+  async function ensureAuth() {
+    var sb = getClient();
+    var got = await sb.auth.getSession();
+    var session = got && got.data ? got.data.session : null;
+    if (!session) {
+      var anon = await sb.auth.signInAnonymously();
+      if (anon.error) throw new Error("No se pudo iniciar sesión anónima: " + anon.error.message);
+      session = anon.data ? anon.data.session : null;
+    }
+    if (!session || !session.access_token) throw new Error("Supabase no devolvió una sesión válida.");
+    state.session = session;
+    state.userId = session.user ? session.user.id : "";
+    try {
+      if (sb.realtime && sb.realtime.setAuth) await sb.realtime.setAuth(session.access_token);
+    } catch (e) { /* supabase-js lo hace al suscribirse */ }
+    return session;
+  }
+
+  function errorText(err) {
+    if (!err) return "Error desconocido.";
+    if (typeof err === "string") return err;
+    return err.message || err.error_description || err.details || err.hint || String(err);
+  }
+
+  async function rpc(name, payload) {
+    var sb = getClient();
+    await ensureAuth();
+    var result = await sb.rpc(name, payload);
+    if (result.error && /jwt|token|expired|401/i.test(errorText(result.error))) {
+      try { await sb.auth.refreshSession(); } catch (e) {}
+      await ensureAuth();
+      result = await sb.rpc(name, payload);
+    }
+    if (result.error) throw new Error(errorText(result.error));
+    return result.data;
+  }
+
+  async function topicFor(code, secret) {
+    return "chatwifi:" + CryptoJS.SHA256(code.toUpperCase() + ":" + secret).toString(CryptoJS.enc.Hex).slice(0, 24);
+  }
+
+  // ── Flujo de conexión ─────────────────────────────────────────────────
+  function validateForm(needCode) {
+    var name = $("name").value.trim() || "Móvil";
+    var code = $("code").value.trim().toUpperCase();
+    var secret = $("secret").value;
+    if (secret.trim().length < 3) {
+      connectStatus("El secreto debe tener al menos 3 caracteres, igual que en la PC.", "error");
+      $("secret").focus();
+      return null;
+    }
+    if (needCode) {
+      if (!/^[A-Z0-9]{6}$/.test(code)) {
+        connectStatus("El código debe tener 6 letras o números.", "error");
+        $("code").focus();
+        return null;
+      }
+    }
+    state.username = name;
+    state.secret = secret;
+    state.presenceKey = randomHex(8);
+    try {
+      localStorage.setItem("chatwifi_beta_name", name);
+      if (code) localStorage.setItem("chatwifi_beta_code", code);
+    } catch (e) {}
+    return { name: name, code: code, secret: secret };
+  }
+
+  function setBusy(busy) {
+    state.busy = busy;
+    $("btn-join").disabled = busy;
+    $("btn-create").disabled = busy;
+  }
+
+  async function doJoin(ev) {
+    ev.preventDefault();
+    if (state.busy) return;
+    var form = validateForm(true);
+    if (!form) return;
+
+    setBusy(true);
+    connectStatus("Iniciando sesión anónima en Supabase…", "working");
+    try {
+      await ensureAuth();
+      connectStatus("Buscando la sala " + form.code + "…", "working");
+      var rows = await rpc("chat_join_room", { p_code: form.code, p_name: form.name });
+      var row = Array.isArray(rows) ? rows[0] : rows;
+      if (!row) throw new Error("La sala no respondió.");
+
+      state.code = form.code;
+      state.roomId = row.out_room_id || "";
+      state.topic = row.out_topic || "";
+      state.approved = !!row.out_approved;
+      state.expiresAt = safeParseTs(row.out_expires_at);
+      state.isAdmin = false;
+      state.inRoom = true;
+      state.announced = false;
+
+      if (row.out_closed) throw new Error("La sala está cerrada.");
+      if (state.expiresAt && Date.now() / 1000 > state.expiresAt) throw new Error("La sala expiró.");
+      if (!state.roomId || !state.topic) throw new Error("La sala no devolvió sus datos.");
+
+      if (!state.approved) {
+        state.secret = form.secret;
+        showWaiting(form.code);
+        startApprovalPolling();
+      } else {
+        state.secret = form.secret;
+        enterRoom();
+      }
+    } catch (err) {
+      state.inRoom = false;
+      connectStatus("No se pudo entrar: " + errorText(err), "error");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function doCreate() {
+    if (state.busy) return;
+    var form = validateForm(false);
+    if (!form) return;
+
+    setBusy(true);
+    connectStatus("Creando una sala de prueba…", "working");
+    try {
+      await ensureAuth();
+      var code = generateCode();
+      var topic = await topicFor(code, form.secret);
+      var expires = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+      var rows = await rpc("chat_create_room", {
+        p_code: code,
+        p_topic: topic,
+        p_name: form.name,
+        p_expires_at: expires,
+        p_approval_required: false
+      });
+      var row = Array.isArray(rows) ? rows[0] : rows;
+      if (!row) throw new Error("Supabase no devolvió la sala creada.");
+
+      state.code = code;
+      state.roomId = row.room_id || "";
+      state.topic = row.topic || topic;
+      state.approved = true;
+      state.isAdmin = true;
+      state.expiresAt = Math.floor(Date.now() / 1000) + 24 * 60 * 60;
+      state.inRoom = true;
+      state.announced = false;
+      state.secret = form.secret;
+
+      $("code").value = code;
+      try { localStorage.setItem("chatwifi_beta_code", code); } catch (e) {}
+      enterRoom();
+    } catch (err) {
+      state.inRoom = false;
+      connectStatus("No se pudo crear: " + errorText(err), "error");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function showWaiting(code) {
+    $("waiting-code").textContent = code;
+    $("waiting-detail").textContent = "Solicitud enviada. Pide al administrador que abra ADMINISTRAR SALA y te apruebe.";
+    screen("waiting");
+  }
+
+  function startApprovalPolling() {
+    stopApprovalPolling();
+    state.waitingTimer = setInterval(async function () {
+      if (!state.inRoom || state.approved) return;
+      try {
+        var rows = await rpc("chat_join_room", { p_code: state.code, p_name: state.username });
+        var row = Array.isArray(rows) ? rows[0] : rows;
+        if (!row) return;
+        if (row.out_closed) { await leaveRoom("La sala fue cerrada por el administrador.", "bad"); return; }
+        var exp = safeParseTs(row.out_expires_at);
+        if (exp && Date.now() / 1000 > exp) { await leaveRoom("La sala expiró.", "bad"); return; }
+        if (row.out_approved) {
+          state.approved = true;
+          state.topic = row.out_topic || state.topic;
+          state.expiresAt = exp;
+          stopApprovalPolling();
+          enterRoom();
+        } else {
+          $("waiting-detail").textContent = "Todavía no te han aprobado. Comprobando cada 3 segundos…";
+        }
+      } catch (err) {
+        $("waiting-detail").textContent = "No se pudo comprobar: " + errorText(err);
+      }
+    }, 3000);
+  }
+
+  function stopApprovalPolling() {
+    if (state.waitingTimer) clearInterval(state.waitingTimer);
+    state.waitingTimer = null;
+  }
+
+  function enterRoom() {
+    screen("chat");
+    $("room-code").textContent = state.code || "------";
+    $("messages").innerHTML = "";
+    state.seen = Object.create(null);
+    state.lastNames = [];
+    state.presenceStarted = false;
+    state.subscribed = false;
+    setBadge("", "Conectando");
+    setChatSub("Abriendo canal privado…");
+    setComposer(false);
+    addSystem("Conectado a la sala " + state.code + ".", "");
+    if (state.isAdmin) addSystem("Sala de prueba creada. Comparte el código y el secreto.", "");
+    if (state.expiresAt) addSystem("La sala caduca el " + formatExpiry(state.expiresAt) + ".", "warn");
+    connectChannel().catch(function (err) {
+      state.subscribed = false;
+      setComposer(false);
+      setBadge("bad", "Sin conexión");
+      setChatSub("No se pudo abrir el canal");
+      alertChat("No se pudo conectar al canal: " + errorText(err));
+      addSystem("Error conectando el canal: " + errorText(err), "bad");
+    });
+    startHeartbeat();
+  }
+
+  function setComposer(enabled) {
+    $("btn-send").disabled = !enabled;
+    $("input").disabled = !enabled;
+  }
+
+  function channelConfig() {
+    return {
+      config: {
+        broadcast: { self: false, ack: true },
+        presence: { key: state.presenceKey, enabled: true },
+        private: true
+      }
+    };
+  }
+
+  async function connectChannel() {
+    if (!state.inRoom || !state.approved || !state.topic) return;
+    var sb = getClient();
+    await ensureAuth();
+
+    if (state.channel) {
+      var old = state.channel;
+      state.channel = null;
+      try { await sb.removeChannel(old); } catch (e) {}
+    }
+
+    setBadge("", "Conectando");
+    setChatSub("Conectando al canal privado…");
+    setComposer(false);
+
+    var ch = sb.channel(state.topic, channelConfig());
+    state.channel = ch;
+    state.subscribed = false;
+
+    ch.on("broadcast", { event: "message" }, function (payload) {
+      onBroadcast(payload);
+    });
+
+    ch.on("presence", { event: "sync" }, function () { refreshPresence(); });
+    ch.on("presence", { event: "join" }, function () { refreshPresence(); });
+    ch.on("presence", { event: "leave" }, function () { refreshPresence(); });
+
+    ch.subscribe(async function (status, err) {
+      if (state.channel !== ch) return;
+      if (status === "SUBSCRIBED") {
+        state.subscribed = true;
+        setBadge("ok", "En línea");
+        setChatSub(state.isAdmin ? "Sala de prueba · administrador" : "Conectado · cifrado");
+        setComposer(true);
+        try {
+          await ch.track({ name: state.username });
+        } catch (e) {
+          addSystem("No se pudo publicar tu presencia: " + errorText(e), "warn");
+        }
+        refreshPresence();
+        if (!state.announced) {
+          state.announced = true;
+          addSystem("Canal privado conectado. Los mensajes van cifrados.", "");
+        }
+      } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
+        state.subscribed = false;
+        setComposer(false);
+        setBadge("bad", "Sin conexión");
+        setChatSub("Canal desconectado · reintentando…");
+        alertChat("Se perdió la conexión con el canal. Supabase Realtime reintentará automáticamente. Si no vuelve, sal y entra de nuevo.");
+        addSystem("Canal desconectado (" + status + (err ? ": " + errorText(err) : "") + ").", "bad");
+      }
+    });
+  }
+
+  async function refreshPresence() {
+    if (!state.channel) {
+      $("users").innerHTML = "";
+      $("user-count").textContent = "0";
+      return;
+    }
+    var raw = {};
+    try { raw = state.channel.presenceState() || {}; } catch (e) {}
+    var names = [];
+    Object.keys(raw).forEach(function (key) {
+      var list = raw[key] || [];
+      for (var i = 0; i < list.length; i++) {
+        var meta = list[i] || {};
+        var name = meta.name || (meta.meta && meta.meta.name) || "";
+        name = String(name).trim();
+        if (name && names.indexOf(name) === -1) names.push(name);
+      }
+    });
+    names.sort(function (a, b) { return a.localeCompare(b, "es"); });
+
+    var box = $("users");
+    box.innerHTML = "";
+    names.forEach(function (name) {
+      var chip = document.createElement("span");
+      chip.className = "chip" + (name === state.username ? " me" : "");
+      chip.textContent = name === state.username ? name + " (tú)" : name;
+      box.appendChild(chip);
+    });
+    $("user-count").textContent = String(names.length);
+
+    if (state.presenceStarted) {
+      names.forEach(function (name) {
+        if (name !== state.username && state.lastNames.indexOf(name) === -1) {
+          addSystem(name + " está en línea.", "");
+        }
+      });
+      state.lastNames.forEach(function (name) {
+        if (name !== state.username && names.indexOf(name) === -1) {
+          addSystem(name + " salió.", "");
+        }
+      });
+    }
+    state.lastNames = names;
+    state.presenceStarted = true;
+
+    if (names.length > MAX_USERS) {
+      setChatSub("Sala con " + names.length + " usuarios (recomendado: " + MAX_USERS + ")");
+    }
+  }
+
+  // ── Mensajes ──────────────────────────────────────────────────────────
+  function isNearBottom() {
+    var box = $("messages");
+    return box.scrollHeight - box.scrollTop - box.clientHeight < 90;
+  }
+
+  function scrollToBottom(force) {
+    var box = $("messages");
+    if (force || isNearBottom()) {
+      box.scrollTop = box.scrollHeight;
+      show($("scroll-bottom"), false);
+    }
+  }
+
+  function trimMessages() {
+    var box = $("messages");
+    while (box.children.length > MAX_MESSAGES) box.removeChild(box.firstChild);
+  }
+
+  function addSystem(text, kind) {
+    var el = document.createElement("div");
+    el.className = "system" + (kind ? " " + kind : "");
+    el.textContent = text;
+    var box = $("messages");
+    var near = isNearBottom();
+    box.appendChild(el);
+    trimMessages();
+    if (near) scrollToBottom(true);
+  }
+
+  function senderColor(name) {
+    var h = 0;
+    for (var i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
+    return "hsl(" + (h % 360) + " 62% 74%)";
+  }
+
+  function addBubble(sender, text, own) {
+    var row = document.createElement("div");
+    row.className = "msg-row" + (own ? " own" : "");
+
+    if (!own) {
+      var s = document.createElement("div");
+      s.className = "msg-sender";
+      s.textContent = sender;
+      s.style.color = senderColor(sender);
+      row.appendChild(s);
+    }
+
+    var bubble = document.createElement("div");
+    bubble.className = "bubble";
+    bubble.textContent = text;
+    row.appendChild(bubble);
+
+    var meta = document.createElement("div");
+    meta.className = "msg-meta";
+    var time = document.createElement("span");
+    time.textContent = timeText();
+    meta.appendChild(time);
+    if (own) {
+      var st = document.createElement("span");
+      st.className = "state";
+      st.textContent = "Enviando…";
+      meta.appendChild(st);
+      row._stateEl = st;
+    }
+    row.appendChild(meta);
+
+    var box = $("messages");
+    var near = isNearBottom();
+    box.appendChild(row);
+    trimMessages();
+    if (near || own) scrollToBottom(true);
+    return row;
+  }
+
+  function markOwn(row, ok) {
+    if (!row || !row._stateEl) return;
+    row._stateEl.textContent = ok ? "Enviado" : "Falló";
+    row._stateEl.className = "state" + (ok ? "" : " fail");
+  }
+
+  async function sendEnvelope(kind, fields) {
+    if (!state.channel || !state.subscribed) throw new Error("No estás conectado a la sala.");
+    var env = {
+      v: 1,
+      kind: kind,
+      id: fields.id || newId(),
+      ts: Date.now() / 1000
+    };
+    Object.keys(fields).forEach(function (k) {
+      if (k !== "id") env[k] = fields[k];
+    });
+    var data = encryptBroadcast(env, state.secret);
+    var result = await state.channel.send({
+      type: "broadcast",
+      event: "message",
+      payload: { from: state.username, data: data }
+    });
+    return result;
+  }
+
+  async function sendText(text) {
+    var clean = text.trim();
+    if (!clean) return;
+    if (clean.length > 4000) clean = clean.slice(0, 4000);
+    if (!state.subscribed) {
+      alertChat("Aún no estás conectado al canal. Espera un momento.");
+      return;
+    }
+
+    var row = addBubble("Tú", clean, true);
+    try {
+      var result = await sendEnvelope("message", {
+        text: clean,
+        reply_to: null,
+        expires_at: null
+      });
+      markOwn(row, result !== "error" && result !== "timed out");
+      if (result === "timed out" || result === "error") {
+        alertChat("El mensaje no se confirmó. Revisa la conexión.");
+      }
+    } catch (err) {
+      markOwn(row, false);
+      alertChat("No se pudo enviar: " + errorText(err));
+    }
+  }
+
+  async function onBroadcast(payload) {
+    try {
+      var p = payload;
+      if (p && p.payload && typeof p.payload === "object") p = p.payload;
+      if (!p || typeof p.data !== "string") return;
+
+      var sender = String(p.from || "Remoto");
+      var env;
+      try {
+        env = decryptBroadcast(p.data, state.secret);
+      } catch (err) {
+        addSystem("Mensaje de " + sender + " no se pudo descifrar. ¿Secreto distinto o mensaje corrupto?", "bad");
+        return;
+      }
+
+      var kind = env.kind || "message";
+      if (kind === "kick") {
+        if (env.target && env.target === state.userId) {
+          await leaveRoom("El administrador te expulsó de la sala.", "bad");
+        }
+        return;
+      }
+      if (kind === "room_closed") {
+        await leaveRoom("La sala fue cerrada por el administrador.", "bad");
+        return;
+      }
+      if (kind === "file") {
+        addSystem(sender + " envió un archivo. La beta solo admite texto.", "warn");
+        return;
+      }
+      if (kind === "ping") {
+        try { await sendEnvelope("pong", { ts: env.ts || Date.now() / 1000 }); } catch (e) {}
+        return;
+      }
+      if (kind === "pong" || kind === "reaction" || kind === "read") return;
+      if (kind !== "message") return;
+
+      var text = String(env.text || "");
+      if (!text) return;
+      if (env.expires_at && Date.now() / 1000 > Number(env.expires_at)) return;
+
+      var mid = env.id ? String(env.id) : "";
+      if (mid) {
+        if (state.seen[mid]) return;
+        state.seen[mid] = true;
+      }
+
+      // El escritorio ya envía el texto sin el prefijo /color cuando aplica.
+      addBubble(sender, text, false);
+      if (navigator.vibrate && document.visibilityState === "hidden") {
+        try { navigator.vibrate(25); } catch (e) {}
+      }
+    } catch (err) {
+      addSystem("Error procesando un mensaje recibido: " + errorText(err), "bad");
+    }
+  }
+
+  // ── Latido / cierre ───────────────────────────────────────────────────
+  function startHeartbeat() {
+    stopHeartbeat();
+    state.heartbeatTimer = setInterval(async function () {
+      if (!state.inRoom) return;
+      try {
+        var rows = await rpc("chat_join_room", { p_code: state.code, p_name: state.username });
+        var row = Array.isArray(rows) ? rows[0] : rows;
+        if (!row) return;
+        if (row.out_closed) { await leaveRoom("La sala fue cerrada.", "bad"); return; }
+        var exp = safeParseTs(row.out_expires_at);
+        if (exp && Date.now() / 1000 > exp) { await leaveRoom("La sala expiró.", "bad"); return; }
+        if (!row.out_approved) { await leaveRoom("El administrador retiró tu acceso a la sala.", "bad"); return; }
+        state.approved = true;
+        state.expiresAt = exp;
+      } catch (err) {
+        var msg = errorText(err).toLowerCase();
+        if (msg.indexOf("cerrada") !== -1 || msg.indexOf("expir") !== -1 || msg.indexOf("bloqueado") !== -1) {
+          await leaveRoom("La sala ya no está disponible: " + errorText(err), "bad");
+        }
+      }
+    }, 30000);
+  }
+
+  function stopHeartbeat() {
+    if (state.heartbeatTimer) clearInterval(state.heartbeatTimer);
+    state.heartbeatTimer = null;
+  }
+
+  async function leaveRoom(message, kind) {
+    if (!state.inRoom && !state.channel) {
+      screen("connect");
+      return;
+    }
+    state.inRoom = false;
+    state.approved = false;
+    state.subscribed = false;
+    stopApprovalPolling();
+    stopHeartbeat();
+
+    var ch = state.channel;
+    state.channel = null;
+    if (ch) {
+      try { await ch.untrack(); } catch (e) {}
+      try { await getClient().removeChannel(ch); } catch (e) {}
+    }
+
+    state.roomId = "";
+    state.topic = "";
+    state.isAdmin = false;
+    state.lastNames = [];
+    state.presenceStarted = false;
+    state.announced = false;
+    $("messages").innerHTML = "";
+    setComposer(false);
+    setBadge("", "Desconectado");
+    $("users").innerHTML = "";
+    $("user-count").textContent = "0";
+    screen("connect");
+    if (message) {
+      connectStatus(message, kind === "bad" ? "error" : "ok");
+    } else {
+      connectStatus("Has salido de la sala.", "ok");
+    }
+  }
+
+  // ── Eventos UI ────────────────────────────────────────────────────────
+  function setup() {
+    var savedName = "";
+    var savedCode = "";
+    try {
+      savedName = localStorage.getItem("chatwifi_beta_name") || "";
+      savedCode = localStorage.getItem("chatwifi_beta_code") || "";
+    } catch (e) {}
+    if (savedName) $("name").value = savedName;
+    if (savedCode) $("code").value = savedCode;
+
+    $("form-connect").addEventListener("submit", doJoin);
+    $("btn-create").addEventListener("click", doCreate);
+
+    $("btn-eye").addEventListener("click", function () {
+      var input = $("secret");
+      var visible = input.type === "text";
+      input.type = visible ? "password" : "text";
+      this.textContent = visible ? "Ver" : "Ocultar";
+      this.setAttribute("aria-label", visible ? "Mostrar secreto" : "Ocultar secreto");
+    });
+
+    $("code").addEventListener("input", function () {
+      var pos = this.selectionStart;
+      this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
+      try { this.setSelectionRange(pos, pos); } catch (e) {}
+    });
+
+    $("btn-wait-cancel").addEventListener("click", function () {
+      leaveRoom("Has cancelado la solicitud.", "ok");
+    });
+
+    $("btn-leave").addEventListener("click", function () {
+      if (confirm("¿Salir de la sala?")) leaveRoom("", "ok");
+    });
+
+    $("room-code").addEventListener("click", function () {
+      if (!state.code) return;
+      copyText(state.code);
+      var old = this.textContent;
+      this.textContent = "COPIADO";
+      var self = this;
+      setTimeout(function () { self.textContent = old; }, 900);
+      alertChat("Código " + state.code + " copiado. Comparte también el secreto.");
+    });
+
+    $("form-send").addEventListener("submit", function (ev) {
+      ev.preventDefault();
+      var text = $("input").value;
+      if (!text.trim()) return;
+      $("input").value = "";
+      autoResize();
+      sendText(text);
+    });
+
+    $("input").addEventListener("keydown", function (ev) {
+      if (ev.key === "Enter" && !ev.shiftKey && !ev.isComposing) {
+        ev.preventDefault();
+        $("form-send").requestSubmit();
+      }
+    });
+
+    $("input").addEventListener("input", autoResize);
+
+    $("messages").addEventListener("scroll", function () {
+      show($("scroll-bottom"), !isNearBottom());
+    });
+    $("scroll-bottom").addEventListener("click", function () { scrollToBottom(true); });
+
+    window.addEventListener("online", function () {
+      if (state.inRoom && !state.subscribed) {
+        addSystem("Internet restablecido. Reconectando…", "warn");
+        connectChannel().catch(function (err) {
+          setBadge("bad", "Sin conexión");
+          addSystem("No se pudo reconectar: " + errorText(err), "bad");
+        });
+      }
+    });
+    window.addEventListener("offline", function () {
+      if (state.inRoom) {
+        setBadge("bad", "Sin Internet");
+        setComposer(false);
+        addSystem("Sin conexión a Internet.", "bad");
+      }
+    });
+
+    document.addEventListener("visibilitychange", function () {
+      if (document.visibilityState === "visible" && state.channel) refreshPresence();
+    });
+
+    window.addEventListener("beforeunload", function () {
+      if (state.channel) {
+        try { state.channel.untrack(); } catch (e) {}
+      }
+    });
+  }
+
+  function autoResize() {
+    var el = $("input");
+    el.style.height = "auto";
+    el.style.height = Math.min(el.scrollHeight, 128) + "px";
+  }
+
+  setup();
+})();
+</script>
+</body>
+</html>
